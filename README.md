@@ -1,3 +1,3 @@
 # maintenance-page
 
-A simple static maintenance page for TLOI.
+The TLOI maintenance page, served by a Cloudflare Worker.
