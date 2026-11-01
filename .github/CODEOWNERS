@@ -1,2 +1,6 @@
-*         @tloi-dalat/swe
-/.github/ @tloi-dalat/sre
+*                  @tloi-dalat/swe
+/.github/          @tloi-dalat/sre
+/worker/           @tloi-dalat/sre
+/wrangler.jsonc    @tloi-dalat/sre
+/package.json      @tloi-dalat/sre
+/package-lock.json @tloi-dalat/sre
