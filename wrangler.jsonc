@@ -15,19 +15,13 @@
       "name": "maintenance-page-development",
       "workers_dev": false,
       "preview_urls": false,
-      "vars": {
-        "TEAM_DOMAIN": "https://tloi.cloudflareaccess.com",
-        "ACCESS_AUD": "*"
-      }
+      "kv_namespaces": [{ "binding": "MAINTENANCE", "id": "04c15f7fbe8047abb868672e4343c34b" }]
     },
     "production": {
       "name": "maintenance-page-production",
       "workers_dev": false,
       "preview_urls": false,
-      "vars": {
-        "TEAM_DOMAIN": "https://tloi.cloudflareaccess.com",
-        "ACCESS_AUD": "d2b8202a9ae4268043d152968c7139f83fce7c859480b0805201ba950ea91210"
-      }
+      "kv_namespaces": [{ "binding": "MAINTENANCE", "id": "04c15f7fbe8047abb868672e4343c34b" }]
     }
   }
 }

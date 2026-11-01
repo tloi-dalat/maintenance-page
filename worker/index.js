@@ -4,7 +4,25 @@ const ASSETS_PREFIX = "/_maintenance/";
 const LOGIN_PATH = "/maintenance";
 const RETRY_AFTER = "3600";
 
-let jwks;
+const SETTINGS_TTL = 60_000;
+
+const settings = new Map();
+const keySets = new Map();
+
+async function hostSettings(env, host) {
+  const cached = settings.get(host);
+  if (cached && Date.now() - cached.at < SETTINGS_TTL) return cached.value;
+  const value = await env.MAINTENANCE.get(host, { type: "json", cacheTtl: 60 }).catch(() => null);
+  settings.set(host, { value, at: Date.now() });
+  return value;
+}
+
+function keySet(teamDomain) {
+  if (!keySets.has(teamDomain)) {
+    keySets.set(teamDomain, createRemoteJWKSet(new URL(`${teamDomain}/cdn-cgi/access/certs`)));
+  }
+  return keySets.get(teamDomain);
+}
 
 function cookies(request, name) {
   const header = request.headers.get("cookie") || "";
@@ -15,15 +33,17 @@ function cookies(request, name) {
     .map(([, ...value]) => value.join("="));
 }
 
-async function isStaff(request, env) {
-  if (!env.TEAM_DOMAIN || !env.ACCESS_AUD) return false;
-  const options = { issuer: env.TEAM_DOMAIN, algorithms: ["RS256"] };
-  if (env.ACCESS_AUD !== "*") options.audience = env.ACCESS_AUD;
+async function isStaff(request, env, host) {
+  const access = await hostSettings(env, host);
+  if (!access?.team_domain || !access?.aud) return false;
   const tokens = [request.headers.get("cf-access-jwt-assertion"), ...cookies(request, "CF_Authorization")].filter(Boolean);
-  jwks ??= createRemoteJWKSet(new URL(`${env.TEAM_DOMAIN}/cdn-cgi/access/certs`));
   for (const token of tokens) {
     try {
-      await jwtVerify(token, jwks, options);
+      await jwtVerify(token, keySet(access.team_domain), {
+        issuer: access.team_domain,
+        audience: access.aud,
+        algorithms: ["RS256"],
+      });
       return true;
     } catch {}
   }
@@ -34,7 +54,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (await isStaff(request, env)) {
+    if (await isStaff(request, env, url.hostname)) {
       if (url.pathname === LOGIN_PATH || url.pathname.startsWith(`${LOGIN_PATH}/`)) {
         return Response.redirect(`${url.origin}/`, 302);
       }
