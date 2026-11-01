@@ -1,0 +1,16 @@
+{
+  "name": "maintenance-page",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --env development",
+    "deploy:development": "wrangler deploy --env development",
+    "deploy:production": "wrangler deploy --env production"
+  },
+  "dependencies": {
+    "jose": "6.2.14"
+  },
+  "devDependencies": {
+    "wrangler": "4.156.0"
+  }
+}
